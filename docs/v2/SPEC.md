@@ -10,7 +10,8 @@ GUI reference: open `reference/gui-reference.html` in a browser. It shows layout
 A Quickshell plugin (QML + JS, a little generated Lua) with one bounded,
 standard-library Perl helper for safe wallpaper staging. Perl is part of the
 Omarchy package baseline; Station ships no compiled binary. One concept, the
-**Station**: switching station switches every monitor together; sending a window
+**Station**: switching station moves the focused monitor and leaves the other
+displays alone, so each display shows its own station; sending a window
 to a station keeps it on the same monitor; unplugging a monitor merges its windows
 into a surviving monitor without changing their station. A GUI arranges displays.
 
@@ -231,7 +232,7 @@ Load config/state → recovery check (§9 stale preview token → rollback) → 
 - `monitoradded*`: cancel removal grace, refresh displays, reapply the saved mode, and migrate to the resulting compact map. Open the panel on Displays. In Single mode a new monitor stays off.
 - `monitorremoved*`: retain the old mapping during `graceMs` (default 5000). A reconnect cancels compaction. Otherwise reapply the saved mode to survivors and run a journaled migration, then show the retained station.
 - If the Single target (or every enabled monitor) disappears: fall back to Extend on whatever is connected.
-- **Follow focus** (default on, setting): on `workspace.active` (100 ms trailing debounce), act only when `state === idle` and no topology change happened in the last 500 ms; if the focused managed monitor's station differs from another present monitor's, `showStation` it. Re-read state before acting. Suppressed entirely while `switching`, `migrating`, `moving`, `applyingLayout`, `previewing` (`syncInProgress`).
+- **Follow focus** (default on, setting): on `workspace.active` (100 ms trailing debounce), act only when `state === idle` and no topology change happened in the last 500 ms; record the focused managed monitor's station in `currentStation` and the bar indicators only. It never refocuses another display: switching is per display. Re-read state before acting. Suppressed entirely while `switching`, `migrating`, `moving`, `applyingLayout`, `previewing` (`syncInProgress`).
 
 `[S n]` = station of the focused managed monitor's active workspace.
 
@@ -251,7 +252,7 @@ Load config/state → recovery check (§9 stale preview token → rollback) → 
 
 | Action                               | Default                         | Replaces                                                                                                                                                                                                                                            |
 | ------------------------------------ | ------------------------------- | --------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
-| Switch to station n                  | `SUPER + 1…0`                   | Omarchy workspace switch (`SUPER + code:10…19`)                                                                                                                                                                                                     |
+| Switch to station n                  | `SUPER + 1…0`                   | Omarchy workspace switch (`SUPER + code:10…19`). Acts on the focused display only. |
 | Move window to station n (follow)    | `SUPER + SHIFT + 1…0`           | Omarchy move to workspace                                                                                                                                                                                                                           |
 | Move window silently                 | `SUPER + SHIFT + ALT + 1…0`     | Omarchy move-window-silently (default; confirmed live and in `default/hypr/bindings/tiling.lua`)                                                                                                                                                    |
 | Station to the left / right          | `CTRL + SUPER + ←/→`            | Omarchy "Move grouped window focus left/right" (intentional replacement; author approved 2026-10-04). Applied automatically so Station navigation works on installation. |

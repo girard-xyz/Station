@@ -71,6 +71,18 @@ Item {
   readonly property var workspaceMap: workspaceData.mapping
   property var unmanaged: []
   property int currentStation: persisted.lastStation || 1
+  // Displays switch independently, so each monitor's bar shows its own station.
+  property var stations: {
+    var out = {}
+    if (!Grid.valid(workspaceMap)) return out
+    for (var i = 0; i < monitors.length; i++) {
+      var monitor = monitors[i]
+      if (workspaceMap.outputs.indexOf(monitor.name) === -1) continue
+      var station = Grid.station(Number(monitor.activeWorkspace && monitor.activeWorkspace.id), workspaceMap)
+      if (station !== null) out[monitor.name] = station
+    }
+    return out
+  }
   property int gen: 0
   property int queuedStation: 0
   property bool configLoaded: false
@@ -183,6 +195,7 @@ Item {
   function barSnapshot() {
     return JSON.parse(JSON.stringify({
       currentStation: currentStation,
+      stations: stations,
       displayDraft: displayDraft,
       bindStatuses: bindStatuses,
       config: config,
@@ -903,10 +916,11 @@ Item {
     var available = workspaceMap.outputs
     var generation = begin("switching")
     var focused = focusedMonitor()
-    var rules = Hypr.compactRules(available)
-    var statements = rules.slice()
-    statements = statements.concat(stationFocusStatements(stationNumber, focused ? focused.name : available[0]))
-    expect = { kinds: ["workspace", "focusedmon"], outputs: available.slice(), until: Date.now() + 2000 }
+    // Displays are independent: only the focused output follows the keypress.
+    var target = focused && available.indexOf(focused.name) !== -1 ? focused.name : available[0]
+    var statements = Hypr.compactRules(available)
+    statements.push(Hypr.focusWorkspace(workspaceFor(stationNumber, target)))
+    expect = { kinds: ["workspace", "focusedmon"], outputs: [target], until: Date.now() + 2000 }
     evalLua(Hypr.batch(statements), function(code, message) {
       if (generation !== gen) return
       if (code === 0 && (!message || message.trim() === "ok")) {
@@ -972,9 +986,10 @@ Item {
     if (station === null || workspaceMap.outputs.indexOf(client.monitor) === -1) {
       finishWindowAction(generation, "unmanaged"); return
     }
-    var statements = stationFocusStatements(station, client.monitor)
+    // Independence: refocus the window's own display only.
+    var statements = [Hypr.focusWorkspace(workspaceFor(station, client.monitor))]
     statements.push(Hypr.focusWindow(client.address))
-    expect = { kinds: ["workspace", "focusedmon"], outputs: workspaceMap.outputs.slice(), until: Date.now() + 2000 }
+    expect = { kinds: ["workspace", "focusedmon"], outputs: [client.monitor], until: Date.now() + 2000 }
     evalLua(Hypr.batch(statements), function(code) {
       if (!windowActionCurrent(generation)) { finishWindowAction(generation, "cancelled"); return }
       if (code !== 0) { finishWindowAction(generation, "error"); return }
@@ -2574,7 +2589,12 @@ Item {
       var workspace = Number(monitor.activeWorkspace && monitor.activeWorkspace.id)
       if (!Grid.contains(workspace, root.workspaceMap)) return
       var station = Grid.station(workspace, root.workspaceMap)
-      if (station !== root.currentStation) root.showStation(station)
+      if (station === null || station === root.currentStation) return
+      // Indicator only. Focusing the other displays here would undo independence;
+      // this timer stays the refresh path for workspace events.
+      root.currentStation = station
+      root.persisted.lastStation = station
+      root.saveState()
     })
   }
 

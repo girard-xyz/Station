@@ -37,7 +37,14 @@ Ui.Panel {
   // from full-height/thin to full-width/thin (or vice versa). Keep the last
   // geometrically valid edge until the anchor window reports the new axis.
   property string stablePanelBarPosition: "top"
-  property int stationNumber: service ? service.currentStation : 1
+  // Displays switch independently, so a bar reports the station of its own output.
+  readonly property string monitorName: bar && bar.targetScreenName
+    ? String(bar.targetScreenName) : currentScreenName()
+  property int stationNumber: {
+    var stations = service ? service.stations : null
+    if (stations && monitorName && stations[monitorName] !== undefined) return Number(stations[monitorName])
+    return service ? service.currentStation : 1
+  }
   readonly property string selectedDisplayName: {
     if (!service) return ""
     var displays = service.displayDraft

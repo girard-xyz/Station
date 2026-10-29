@@ -105,7 +105,7 @@ test('native monitor crossing preserves its station after a display reconnect', 
   assert.doesNotMatch(h.calls.at(-1), /workspace = "12"/);
 });
 
-test('vertical station crossing preserves the current display and updates both workspaces', () => {
+test('vertical station crossing preserves the current display and updates only its workspace', () => {
   const h = harness({ monitor: 1, workspace: 2 });
   h.c.shiftWindow('right');
   h.settle();
@@ -114,8 +114,9 @@ test('vertical station crossing preserves the current display and updates both w
   assert.equal(h.c.currentStation, 2);
   assert.equal(h.c.persisted.lastStation, 2);
   const sync = h.calls.at(-1);
-  assert.match(sync, /workspace = "3"/);
   assert.match(sync, /workspace = "4"/);
+  assert.doesNotMatch(sync, /workspace = "3"/);
+  assert.equal((sync.match(/hl\.dsp\.focus\(\{ workspace/g) || []).length, 1);
   assert.ok(sync.endsWith(Hypr.focusWindow('0xabc')));
 });
 
@@ -165,13 +166,14 @@ test('closed windows and topology cancellation cannot cause a stale second move'
   assert.equal(pinned.c.lastWindowAction.result, 'unmanaged');
 });
 
-test('numbered send uses the same active window, follows on all displays, and silent send keeps focus', () => {
+test('numbered send uses the same active window, follows on its own display, and silent send keeps focus', () => {
   const follow = harness({ monitor: 1, workspace: 2 });
   follow.c.sendWindow('3', true);
   assert.equal(follow.live.workspace.id, 6);
   assert.equal(follow.c.currentStation, 3);
-  assert.match(follow.calls.at(-1), /workspace = "5"/);
   assert.match(follow.calls.at(-1), /workspace = "6"/);
+  assert.doesNotMatch(follow.calls.at(-1), /workspace = "5"/);
+  assert.equal((follow.calls.at(-1).match(/hl\.dsp\.focus\(\{ workspace/g) || []).length, 1);
   const silent = harness();
   silent.c.sendWindow('3', false);
   assert.equal(silent.live.workspace.id, 5);

@@ -12,6 +12,7 @@ QtObject {
   readonly property var displayDraft: snapshot ? snapshot.displayDraft : []
   readonly property var bindStatuses: snapshot ? snapshot.bindStatuses : []
   readonly property int currentStation: snapshot ? snapshot.currentStation : 1
+  readonly property var stations: snapshot ? snapshot.stations : ({})
   readonly property string draftMode: snapshot ? snapshot.draftMode : "extend"
   readonly property string draftSingleTarget: snapshot ? snapshot.draftSingleTarget : ""
   readonly property bool draftEditable: snapshot ? snapshot.draftEditable === true : false

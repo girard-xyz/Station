@@ -24,16 +24,17 @@
 
 ## Meet Station
 
-A **station** is one workspace on each active display. Switch stations and every
-screen follows. Send a window to another station and it stays on the same
-physical monitor.
+A **station** is one workspace on each active display. Displays switch
+independently: `SUPER + 1…0` moves the display you are working on, and the other
+screens stay where they are. Send a window to another station and it stays on the
+same physical monitor.
 
 With two displays, S1 contains workspaces 1 and 2; S2 contains 3 and 4.
 Station manages that numbering for you, including when a display disconnects.
 
 | Your workflow | What Station adds |
 | --- | --- |
-| **Move between projects** | Synchronized stations, directional navigation, and window moves with or without following. |
+| **Move between projects** | Independent per-display stations, directional navigation, and window moves with or without following. |
 | **Change your setup** | A visual display editor with snapping, rotation, Extend/Mirror/Single modes, and guarded previews. |
 | **Make room on every screen** | Independent bar placement, visibility, size, background, and Pill style. |
 | **Frame your desktop** | The same wallpaper everywhere, one image per monitor, or a single image spanning the layout. |
@@ -59,8 +60,9 @@ command or additional dependencies are needed on a standard Omarchy install.
 
 ## Stations
 
-**Keep a whole project one shortcut away.** Use `SUPER + 1…0` to switch every
-active display together. The bar’s S1, S2, … indicator shows where you are.
+**Keep a whole project one shortcut away.** Use `SUPER + 1…0` to switch the
+display you are working on; the other displays keep their own station. Each
+bar’s S1, S2, … indicator shows that monitor’s station.
 
 - Move a window to another station and follow it, or send it silently while you keep working.
 - Move directionally within a screen, across neighboring displays, and into the next station at the outer edge.
@@ -151,7 +153,7 @@ Omarchy’s wallpaper links, theme files, and background history stay intact.
 
 | Action | Default shortcut |
 | --- | --- |
-| Switch station | `SUPER + 1…0` |
+| Switch station | `SUPER + 1…0` (focused display) |
 | Move window to station and follow | `SUPER + SHIFT + 1…0` |
 | Send window without following | `SUPER + SHIFT + ALT + 1…0` |
 | Previous / next existing station | `CTRL + SUPER + Left / Right` |

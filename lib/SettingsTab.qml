@@ -82,7 +82,7 @@ Column {
   }
 
   PlainToggleRow {
-    label: "Follow focus (keep monitors on the same station)"
+    label: "Track the focused display's station"
     checked: settingsTab.panelRoot.service && settingsTab.panelRoot.service.config.followFocus
     onClicked: if (settingsTab.panelRoot.service)
       settingsTab.panelRoot.service.setSetting("followFocus", !checked)

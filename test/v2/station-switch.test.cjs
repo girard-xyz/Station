@@ -30,7 +30,8 @@ test('rapid numbered switches retain the last request and return to the occupied
   assert.equal(batches.length, 1);
   batches[0].done(0, 'ok');
   assert.equal(batches.length, 2);
-  assert.ok(batches[1].lua.endsWith(Hypr.focusWorkspace(1) + '; ' + Hypr.focusWorkspace(2)));
+  assert.ok(batches[1].lua.endsWith(Hypr.focusWorkspace(2)));
+  assert.equal((batches[1].lua.match(/hl\.dsp\.focus\(\{ workspace/g) || []).length, 1);
   assert.doesNotMatch(batches[1].lua, /hl\.dsp\.window\.move/);
   batches[1].done(0, 'ok');
   assert.equal(c.currentStation, 1);
@@ -57,4 +58,12 @@ test('Lua error payload cannot record a successful switch; invalid keys cannot r
   assert.equal(c.persisted.lastStation, undefined);
   batches[1].done(0, 'ok');
   assert.equal(c.currentStation, 1);
+});
+test('numbered switch focuses only the display that has focus', () => {
+  const { c, batches } = harness();
+  c.showStation(2);
+  const lua = batches[0].lua;
+  assert.equal((lua.match(/hl\.dsp\.focus\(\{ workspace/g) || []).length, 1);
+  assert.ok(lua.endsWith(Hypr.focusWorkspace(Grid.workspace(2, 'B', c.workspaceMap))));
+  assert.equal(c.expect.outputs.join(','), 'B');
 });
