@@ -29,7 +29,10 @@ function harness({ monitors = vertical, monitor = 0, workspace = 1, workspaceNam
     begin(state) { context.state = state; return ++context.gen; },
     finish(gen) { if (gen === context.gen) context.state = 'idle'; },
     parseJson(raw, fallback) { try { return JSON.parse(raw); } catch { return fallback; } },
-    refresh(include, done) { context.clients = live ? Model.normalizeClients([structuredClone(live)], monitors) : []; done(); },
+    refresh(include, done) {
+      context.clients = live ? Model.normalizeClients([structuredClone(live)], monitors) : []
+      if (done) done()
+    },
     enqueue(command, done) { requests.push(command); done(0, JSON.stringify(live || {})); },
     saveState() {},
     evalLua(lua, done) {

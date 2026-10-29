@@ -927,6 +927,9 @@ Item {
         currentStation = stationNumber
         persisted.lastStation = stationNumber
         saveState()
+        // The bar's S<n> map is derived from this snapshot; without the refresh
+        // the expected workspace events are filtered out and the label goes stale.
+        refresh(false, null)
       }
       var next = queuedStation
       queuedStation = 0
@@ -996,6 +999,7 @@ Item {
       currentStation = station
       persisted.lastStation = station
       saveState()
+      refresh(false, null)              // keep the destination bar's S<n> current
       finishWindowAction(generation, result)
     })
   }

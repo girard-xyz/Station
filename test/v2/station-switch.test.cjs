@@ -8,10 +8,12 @@ const Model = require('../../lib/Model.js');
 const source = readFileSync('Service.qml', 'utf8');
 function harness() {
   const batches = [];
+  const refreshes = [];
   const c = { Hypr, Grid, Model, state: 'idle', gen: 0, queuedStation: 0,
     currentStation: 1, persisted: {}, workspaceMap: { outputs: ['A', 'B'] },
     focusedMonitor: () => ({ name: 'B' }), saveState() {},
     readyForWindows: () => c.state === 'idle',
+    refresh: (includeClients) => { refreshes.push(includeClients); },
     workspaceFor: (s, o) => Grid.workspace(s, o, c.workspaceMap),
     evalLua(lua, done) { batches.push({ lua, done }); },
   };
@@ -20,10 +22,10 @@ function harness() {
     const end = source.indexOf('\n  function ', start + 1);
     c[name] = runInNewContext('(' + source.slice(start, end).trim() + ')', c);
   }
-  return { c, batches };
+  return { c, batches, refreshes };
 }
 test('rapid numbered switches retain the last request and return to the occupied station', () => {
-  const { c, batches } = harness();
+  const { c, batches, refreshes } = harness();
   assert.equal(c.showStation(2), 'started');
   assert.equal(c.showStation(3), 'queued');
   assert.equal(c.showStation(1), 'queued');
@@ -37,6 +39,9 @@ test('rapid numbered switches retain the last request and return to the occupied
   assert.equal(c.currentStation, 1);
   assert.equal(c.persisted.lastStation, 1);
   assert.equal(c.state, 'idle');
+  // The bar's S<n> map is derived from the monitor snapshot, so a successful
+  // switch must refresh it; expected workspace events are filtered out.
+  assert.deepEqual(refreshes, [false, false]);
 });
 test('topology interruption cancels pending switches and stale completion', () => {
   const { c, batches } = harness();
